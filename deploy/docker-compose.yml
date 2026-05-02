@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  mssql:
+    image: mcr.microsoft.com/azure-sql-edge:latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${SA_PASSWORD}"
+    volumes:
+      - mssql-data:/var/opt/mssql
+    networks:
+      - is-network
+  app:
+    image: isapp:lab8
+    environment:
+      ASPNETCORE_URLS: "http://+:8080"
+      ConnectionStrings__Mssql: "Server=mssql;Database=IsLabDb;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;"
+      App__Version: "${APP_VERSION}"
+    ports:
+      - "127.0.0.1:5000:8080"
+    depends_on:
+      - mssql
+    networks:
+      - is-network
+networks:
+  is-network:
+
+volumes:
+  mssql-data:
