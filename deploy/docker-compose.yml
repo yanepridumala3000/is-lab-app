@@ -11,7 +11,7 @@ services:
     networks:
       - is-network
   app:
-    image: isapp:lab8
+    image: ghcr.io/yanepridumala3000/is-lab-app:latest
     environment:
       ASPNETCORE_URLS: "http://+:8080"
       ConnectionStrings__Mssql: "Server=mssql;Database=IsLabDb;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;"
