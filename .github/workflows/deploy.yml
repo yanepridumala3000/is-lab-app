@@ -1,0 +1,38 @@
+name: Continuous Deployment
+
+# Запуск по пушу в ветку main (можно изменить на master)
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Берем код из репозитория
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Магия SSH: подключаемся и выполняем команды
+      - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            # Переходим в директорию деплоя
+            cd ${{ secrets.DEPLOY_PATH }}
+            
+            # Логинимся в GHCR (используем токен из секретов)
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ secrets.GHCR_USER }} --password-stdin
+            
+            # Скачиваем обновленные образы
+            docker compose pull
+            
+            # Перезапускаем контейнеры в фоне
+            docker compose up -d
+            
+            # Очищаем место от старых образов (те самые -f и аккуратность)
+            docker image prune -f
